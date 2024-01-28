@@ -1,0 +1,23 @@
+.logo {
+    height: 100px;
+    width: 100px;
+    border-radius: 6px;
+    float: left;
+    margin-bottom: 5px;
+    margin-top: -20px;
+}
+
+h1 {
+    position:relative ;
+    text-align: center;
+    margin-right: 120px;
+}
+
+
+header {
+    background-color: indigo;
+    border-radius: 10px;
+    padding: 30px;
+    color: white;
+    margin-bottom: 20px;
+}
