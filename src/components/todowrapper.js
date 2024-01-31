@@ -1,45 +1,100 @@
-import React, {useState} from 'react';
-import { Todoform } from './todoform';
-import {v4 as uuidv4 } from 'uuid';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Todo } from './todo';
+import { Todoform } from './todoform';
 import { EditTodoform } from './edittodoform';
-uuidv4();
+
+const API_URL = 'http://127.0.0.1:5000/todos';
 
 export const Todowrapper = () => {
-    const [todos, setTodos] = useState([])
+  const [todos, setTodos] = useState([]);
 
-    const addTodo = todo => {
-        setTodos([...todos, {id: uuidv4(), task: todo, completed: false, isEditing: false }])
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
+  const fetchTodos = async () => {
+    try {
+      const response = await axios.get(API_URL);
+      setTodos(response.data.todos);
+    } catch (error) {
+      console.log('Error fetching todos:', error);
     }
+  };
 
-    const toggleComplete = id => {
-        setTodos(todos.map(todo => todo.id === id ? {...todo, completed: !todo.completed} : todo))
+  const addTodo = async (todo) => {
+    try {
+      const response = await axios.post(API_URL, { todo });
+      setTodos([...todos, response.data]);
+    } catch (error) {
+      console.log('Error adding todo:', error);
     }
-    const deleteTodo = id => {
-        setTodos(todos.filter(todo => todo.id !== id ))
+  };
+
+  const toggleComplete = async (id) => {
+    try {
+      await axios.put(`${API_URL}/${id}/toggleComplete`);
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        )
+      );
+    } catch (error) {
+      console.log('Error toggling complete:', error);
     }
+  };
 
-    const editTodo = id => {
-        setTodos(todos.map(todo => todo.id === id ? {...todo, isEditing: !todo.isEditing} : todo))
+  const deleteTodo = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+    } catch (error) {
+      console.log('Error deleting todo:', error);
     }
+  };
 
-    const editTask = (task, id) => {
-        setTodos(todos.map(todo => todo.id === id ? {...todo, task, isEditing: !todo.isEditing}: todo))
+  const editTodo = async (id) => {
+    try {
+      await axios.put(`${API_URL}/${id}/toggleEditing`);
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo.id === id ? { ...todo, isEditing: !todo.isEditing } : todo
+        )
+      );
+    } catch (error) {
+      console.log('Error toggling editing:', error);
     }
+  };
 
-    return (
-        <div className='Todowrapper'>
+  const editTask = async (task, id) => {
+    try {
+      await axios.put(`${API_URL}/${id}`, { task });
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo.id === id ? { ...todo, task, isEditing: !todo.isEditing } : todo
+        )
+      );
+    } catch (error) {
+      console.log('Error editing task:', error);
+    }
+  };
 
-            <Todoform addTodo={addTodo}/>
-            {todos.map((todo, index) => (
-                todo.isEditing ? (
-                  <EditTodoform editTodo={editTask} task ={todo}/>  
-                ) : (
-                    <Todo task={todo} key={index}
-                toggleComplete={toggleComplete} deleteTodo={deleteTodo} editTodo={editTodo}/>
-                )
-                
-            ))}
-        </div>
-    )
-}
+  return (
+    <div className="Todowrapper">
+      <Todoform addTodo={addTodo} />
+      {todos.map((todo, index) =>
+        todo.isEditing ? (
+          <EditTodoform editTodo={editTask} task={todo} key={index} />
+        ) : (
+          <Todo
+            task={todo}
+            key={index}
+            toggleComplete={toggleComplete}
+            deleteTodo={deleteTodo}
+            editTodo={editTodo}
+          />
+        )
+      )}
+    </div>
+  );
+};
