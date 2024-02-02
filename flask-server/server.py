@@ -10,7 +10,7 @@ todos = []
 def handle_todos():
     if request.method == "GET":
         response = jsonify({"todos": todos})
-        response.headers.add("Access-Control-Allow-Origin", "http://localhost:5000")
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
         return response
     elif request.method == "POST":
         new_todo = request.json.get("todo")
